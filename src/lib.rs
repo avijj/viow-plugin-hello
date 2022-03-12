@@ -148,24 +148,32 @@ impl WaveLoad for TestLoader {
                 .map(|(_, sigtype)| sigtype),
             cycle_range.0 .. cycle_range.1
         );
+        let mut bits = Vec::with_capacity(8);
 
         for (i, cycle) in (cycle_range.0 .. cycle_range.1).enumerate() {
             for (j, &sig) in existing_signals.iter().enumerate() {
                 match sig.1 {
                     SignalType::Bit => {
-                        let bits = vec![cycle.rotate_right(sig.0) & 1 != 0];
+                        //let bits = vec![cycle.rotate_right(sig.0) & 1 != 0];
+                        bits.push(cycle.rotate_right(sig.0) & 1 != 0);
                         rv.set(j as u64, i as u64, &bits);
                     }
 
                     SignalType::Vector(a, b) => {
                         let sz = (b - a).abs();
-                        let bits: Vec<_> = (0..sz)
-                            .map(|k| (cycle >> (sz - k - 1)) & 1 != 0)
-                            .collect();
+                        //let bits: Vec<_> = (0..sz)
+                            //.map(|k| (cycle >> (sz - k - 1)) & 1 != 0)
+                            //.collect();
+
+                        for k in 0..sz {
+                            bits.push((cycle >> (sz - k - 1)) & 1 != 0)
+                        }
 
                         rv.set(j as u64, i as u64, &bits);
                     }
                 }
+
+                bits.clear();
             }
         }
 
